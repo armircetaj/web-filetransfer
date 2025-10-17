@@ -1,0 +1,404 @@
+/* Web File Transfer - Glass Morphism Dark Theme */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(180deg, #000000 0%, #000000 100%);
+    min-height: 100vh;
+    color: white;
+    overflow-x: hidden;
+}
+
+.header {
+    background: linear-gradient(to top, #2e2e2e 0%, #000000 20%);
+    padding: 1.5rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+}
+
+.logo-section {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.logo-img {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+}
+
+.brand-name {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: white;
+}
+
+.nav-buttons {
+    display: flex;
+    gap: 1rem;
+}
+
+.nav-btn {
+    padding: 0.75rem 1.5rem;
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 100;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.nav-btn.active {
+    background: transparent;
+    color: white;
+}
+
+.nav-btn:not(.active) {
+    background: rgba(60, 60, 60, 0.9);
+    color: white;
+}
+
+.nav-btn:hover:not(.active) {
+    background: rgba(70, 70, 70, 0.9);
+}
+
+.main-content {
+    margin-top: 100px;
+    padding: 4rem 2rem 2rem 2rem;
+    min-height: calc(100vh - 100px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.page-title {
+    font-size: 4rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    letter-spacing: -0.02em;
+}
+
+.page-subtitle {
+    font-size: 1.45rem;
+    color: rgba(182, 182, 182, 0.7);
+    margin-bottom: 4rem;
+    text-align: center;
+    font-weight: 500;
+}
+
+.glass-container {
+    background: linear-gradient(to top, #373737 0%, #000000 40%);
+    border: 1px solid white;
+    border-radius: 49px;
+    padding: 2.5rem;
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    max-width: 1200px;
+}
+
+.upload-area {
+    width: 100%;
+    min-height: 300px;
+    border: 2px dashed rgb(105, 105, 105);
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.upload-area:hover {
+    border-color: rgba(255, 255, 255, 0.8);
+}
+
+.upload-area.dragover {
+    border-color: rgba(255, 255, 255, 0.9);
+}
+
+.upload-icon {
+    width: 120px;
+    height: 120px;
+    object-fit: contain;
+    filter: brightness(0) invert(1);
+}
+
+.upload-text {
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.9);
+    text-align: center;
+    font-weight: 100;
+}
+
+.feature-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-top: 15rem;
+    margin-bottom: 10rem;
+    width: 100%;
+    max-width: 1200px;
+}
+
+.feature-card {
+    background: linear-gradient(to bottom, #000000 0%, #1a1a1a 100%);
+    border: 1px solid white;
+    border-radius: 16px;
+    padding: 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.feature-card-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    color: white;
+}
+
+.feature-card-text {
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.8);
+    line-height: 1.5;
+    margin-bottom: 1rem;
+    font-weight: 400;
+}
+
+.feature-icon {
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.download-form {
+    width: 100%;
+    max-width: 500px;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    display: block;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    color: white;
+}
+
+.form-input {
+    width: 100%;
+    padding: 1rem;
+    background: linear-gradient(to bottom, #000000 0%, #1a1a1a 100%);
+    border: 1px solid white;
+    border-radius: 8px;
+    color: white;
+    font-size: 1rem;
+    font-weight: 400;
+    transition: all 0.3s ease;
+}
+
+.form-input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.8);
+}
+
+.download-btn {
+    width: 100%;
+    padding: 1.2rem;
+    background: linear-gradient(to bottom, #000000 0%, #1a1a1a 100%);
+    border: 1px solid white;
+    border-radius: 12px;
+    color: white;
+    font-size: 1.2rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 1rem;
+}
+
+.download-btn:hover {
+    background: linear-gradient(to bottom, #1a1a1a 0%, #2a2a2a 100%);
+    transform: translateY(-2px);
+}
+
+.how-it-works {
+    margin-top: 3rem;
+    width: 100%;
+    max-width: 500px;
+}
+
+.how-it-works-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    color: white;
+}
+
+.how-it-works-text {
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.8);
+    line-height: 1.5;
+    font-weight: 400;
+}
+
+.footer {
+    background: #000000;
+    border-top: 1px solid #868686;
+    padding: 1.5rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    z-index: 1000;
+}
+
+.footer-left p {
+    font-size: 1rem;
+    font-weight: 500;
+    color: rgb(255, 255, 255);
+    margin: 0;
+}
+
+.footer-right {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.github-icon {
+    width: 24px;
+    height: 24px;
+    color: #888888;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.github-icon:hover {
+    color: #aaaaaa;
+}
+
+.copyright {
+    font-size: 0.9rem;
+    font-weight: 400;
+    color: #888888;
+}
+
+@media (max-width: 1200px) {
+    .glass-container {
+        max-width: 1000px;
+    }
+}
+
+@media (max-width: 992px) {
+    .glass-container {
+        max-width: 800px;
+    }
+}
+
+@media (max-width: 768px) {
+    .header {
+        padding: 1rem;
+    }
+    
+    .brand-name {
+        font-size: 1.1rem;
+    }
+    
+    .nav-btn {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.9rem;
+    }
+    
+    .main-content {
+        padding: 2rem 1rem;
+    }
+    
+    .page-title {
+        font-size: 2.5rem;
+    }
+    
+    .page-subtitle {
+        font-size: 1.1rem;
+    }
+    
+    .glass-container {
+        padding: 1.5rem;
+        max-width: 100%;
+        border-radius: 24px;
+    }
+    
+    .upload-area {
+        min-height: 250px;
+    }
+    
+    .upload-icon {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .feature-cards {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .footer {
+        padding: 1rem;
+        flex-direction: column;
+        gap: 0.5rem;
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .page-title {
+        font-size: 2rem;
+    }
+    
+    .page-subtitle {
+        font-size: 1rem;
+    }
+    
+    .glass-container {
+        padding: 1rem;
+    }
+    
+    .upload-area {
+        min-height: 200px;
+    }
+}

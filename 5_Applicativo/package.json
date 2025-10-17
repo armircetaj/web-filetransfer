@@ -1,0 +1,17 @@
+{
+  "name": "5_applicativo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.1.0",
+    "libsodium-wrappers": "^0.7.15",
+    "multer": "^2.0.2",
+    "pg": "^8.16.3"
+  }
+}
