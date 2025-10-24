@@ -37,69 +37,102 @@ function showLoading(element, text = 'Processing...') {
 }
 
 // Utility function to show error messages
-function showError(message, element = null) {
+function showError(message, container = null) {
+    // Remove existing notifications
+    clearNotifications(container);
+    
     // Create error notification
     const errorDiv = document.createElement('div');
-    errorDiv.style.cssText = `
-        position: fixed;
-        top: 100px;
-        right: 20px;
-        background: rgba(220, 38, 38, 0.9);
-        color: white;
-        padding: 1rem 1.5rem;
-        border-radius: 8px;
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        z-index: 10000;
-        max-width: 400px;
-        animation: slideIn 0.3s ease;
-    `;
+    errorDiv.className = 'notification-box error';
     errorDiv.textContent = message;
     
-    document.body.appendChild(errorDiv);
-    
-    // Auto remove after 5 seconds
-    setTimeout(() => {
-        errorDiv.style.animation = 'slideOut 0.3s ease';
+    // Insert after the specified container or find the appropriate container
+    const targetContainer = container || findNotificationContainer();
+    if (targetContainer) {
+        targetContainer.appendChild(errorDiv);
+        
+        // Auto remove after fade-out animation completes (7.5 seconds total)
         setTimeout(() => {
             if (errorDiv.parentNode) {
-                errorDiv.parentNode.removeChild(errorDiv);
+                errorDiv.remove();
             }
-        }, 300);
-    }, 5000);
+        }, 7500);
+    }
 }
 
 // Utility function to show success messages
-function showSuccess(message, element = null) {
+function showSuccess(message, container = null) {
+    // Remove existing notifications
+    clearNotifications(container);
+    
     // Create success notification
     const successDiv = document.createElement('div');
-    successDiv.style.cssText = `
-        position: fixed;
-        top: 100px;
-        right: 20px;
-        background: rgba(34, 197, 94, 0.9);
-        color: white;
-        padding: 1rem 1.5rem;
-        border-radius: 8px;
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        z-index: 10000;
-        max-width: 400px;
-        animation: slideIn 0.3s ease;
-    `;
+    successDiv.className = 'notification-box success';
     successDiv.textContent = message;
     
-    document.body.appendChild(successDiv);
-    
-    // Auto remove after 5 seconds
-    setTimeout(() => {
-        successDiv.style.animation = 'slideOut 0.3s ease';
+    // Insert after the specified container or find the appropriate container
+    const targetContainer = container || findNotificationContainer();
+    if (targetContainer) {
+        targetContainer.appendChild(successDiv);
+        
+        // Auto remove after fade-out animation completes (7.5 seconds total)
         setTimeout(() => {
             if (successDiv.parentNode) {
-                successDiv.parentNode.removeChild(successDiv);
+                successDiv.remove();
             }
-        }, 300);
-    }, 5000);
+        }, 7500);
+    }
+}
+
+// Utility function to show info messages
+function showInfo(message, container = null) {
+    // Remove existing notifications
+    clearNotifications(container);
+    
+    // Create info notification
+    const infoDiv = document.createElement('div');
+    infoDiv.className = 'notification-box info';
+    infoDiv.textContent = message;
+    
+    // Insert after the specified container or find the appropriate container
+    const targetContainer = container || findNotificationContainer();
+    if (targetContainer) {
+        targetContainer.appendChild(infoDiv);
+        
+        // Auto remove after fade-out animation completes (7.5 seconds total)
+        setTimeout(() => {
+            if (infoDiv.parentNode) {
+                infoDiv.remove();
+            }
+        }, 7500);
+    }
+}
+
+// Helper function to find the appropriate container for notifications
+function findNotificationContainer() {
+    // Try to find upload area first
+    const uploadArea = document.getElementById('uploadArea');
+    if (uploadArea) {
+        return uploadArea.parentNode;
+    }
+    
+    // Try to find download form
+    const downloadForm = document.querySelector('.download-form');
+    if (downloadForm) {
+        return downloadForm.parentNode;
+    }
+    
+    // Fallback to main content
+    return document.querySelector('.main-content');
+}
+
+// Helper function to clear existing notifications
+function clearNotifications(container = null) {
+    const targetContainer = container || findNotificationContainer();
+    if (targetContainer) {
+        const existingNotifications = targetContainer.querySelectorAll('.notification-box');
+        existingNotifications.forEach(notification => notification.remove());
+    }
 }
 
 // Add CSS animations for notifications

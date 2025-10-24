@@ -29,7 +29,12 @@
         </div>
         <div class="glass-container how-it-works">
             <div class="how-it-works-title">How it works</div>
-            <div class="how-it-works-text">Call out a feature, benefit, or value that can stand on its own.</div>
+            <div class="how-it-works-text"><p>
+                <span style="font-weight:600;">Paste your link:</span> Insert the download link you received.<br><br>
+                <span style="font-weight:600;">Decrypt locally:</span> The file is downloaded encrypted and decrypted directly in your browser, never on the server.<br><br>
+                <span style="font-weight:600;">Download securely:</span> Once decrypted, your file is ready to save and no temporary data is kept afterward.
+              </p>
+              </div>
         </div>
     </main>
     <footer class="footer">
@@ -41,6 +46,8 @@
             <div class="copyright">©</div>
         </div>
     </footer>
+    <script src="https://cdn.jsdelivr.net/npm/libsodium-wrappers@0.7.15/dist/browsers/sodium.js"></script>
+    <script src="js/crypto-client.js"></script>
     <script src="js/main.js"></script>
     <script src="js/downloader.js"></script>
 </body>

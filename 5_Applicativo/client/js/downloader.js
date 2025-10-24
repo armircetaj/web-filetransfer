@@ -1,5 +1,3 @@
-// Web File Transfer - Download Functionality
-
 document.addEventListener('DOMContentLoaded', function() {
     initializeDownloader();
 });
@@ -9,21 +7,13 @@ function initializeDownloader() {
     const downloadLink = document.getElementById('downloadLink');
     
     if (!decryptBtn || !downloadLink) return;
-    
-    // Handle decrypt button click
     decryptBtn.addEventListener('click', handleDecrypt);
-    
-    // Handle Enter key in input field
     downloadLink.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
             handleDecrypt();
         }
     });
-    
-    // Auto-focus the input field
     downloadLink.focus();
-    
-    // Check if there's a token in the URL
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('token');
     if (token) {
@@ -34,25 +24,18 @@ function initializeDownloader() {
 function handleDecrypt() {
     const downloadLink = document.getElementById('downloadLink');
     const decryptBtn = document.getElementById('decryptBtn');
-    
     if (!downloadLink || !decryptBtn) return;
-    
     const url = downloadLink.value.trim();
-    
     if (!url) {
         showError('Please enter a download link');
         downloadLink.focus();
         return;
     }
-    
-    // Validate URL format
     if (!isValidUrl(url)) {
         showError('Please enter a valid URL');
         downloadLink.focus();
         return;
     }
-    
-    // Extract token from URL
     const token = extractTokenFromUrl(url);
     if (!token) {
         showError('Invalid download link format. Please check your link.');
@@ -60,14 +43,11 @@ function handleDecrypt() {
         return;
     }
     
-    // Show loading state
     const hideLoading = showLoading(decryptBtn, 'Decrypting...');
-    
-    // Start download process
     downloadAndDecryptFile(url, token)
         .then(() => {
             hideLoading();
-            showSuccess('File downloaded successfully!');
+            showSuccess('File downloaded and decrypted successfully!');
         })
         .catch((error) => {
             hideLoading();
@@ -75,78 +55,100 @@ function handleDecrypt() {
         });
 }
 
-// Placeholder function for actual download and decrypt process
 async function downloadAndDecryptFile(url, token) {
-    // This is a placeholder for the actual download implementation
-    // In the real implementation, this would:
-    // 1. Validate the token with the server
-    // 2. Download the encrypted file
-    // 3. Derive decryption key using the token
-    // 4. Decrypt the file using libsodium
-    // 5. Trigger browser download with original filename
-    
     try {
-        // Simulate download delay
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
-        // Placeholder: Create a dummy file for demonstration
-        const dummyContent = 'This is a placeholder file. In the real implementation, this would be the decrypted file content.';
-        const dummyFilename = 'downloaded_file.txt';
-        
-        // Trigger download
-        downloadBlob(dummyContent, dummyFilename, 'text/plain');
-        
+        if (!window.cryptoClient.isInitialized) {
+            await window.cryptoClient.initialize();
+        }
+
+        const statusResponse = await fetch(`/status/${token}`);
+        if (!statusResponse.ok) {
+            const errorData = await statusResponse.json();
+            throw new Error(errorData.error || 'Failed to get file status');
+        }
+
+        const status = await statusResponse.json();
+        if (status.downloads_remaining <= 0) {
+            throw new Error('File download limit reached');
+        }
+
+        if (status.expires_at && new Date(status.expires_at) < new Date()) {
+            throw new Error('File has expired');
+        }
+
+        const downloadResponse = await fetch(url);
+        if (!downloadResponse.ok) {
+            const errorData = await downloadResponse.json();
+            throw new Error(errorData.error || 'Failed to download file');
+        }
+
+        const saltBase64 = downloadResponse.headers.get('X-File-Salt');
+        if (!saltBase64) {
+            throw new Error('Salt not found in response headers');
+        }
+
+        const salt = window.cryptoClient.base64ToBytes(saltBase64);
+        const encryptedFileData = await downloadResponse.arrayBuffer();
+        const encryptedFileBytes = new Uint8Array(encryptedFileData);
+        const decryptionKey = window.cryptoClient.deriveKey(token, salt);
+        const decryptedFileData = window.cryptoClient.decryptFile(encryptedFileBytes, decryptionKey);
+        const blob = new Blob([decryptedFileData]);
+        const downloadUrl = URL.createObjectURL(blob);
+        const filename = extractFilenameFromUrl(url) || 'downloaded_file';
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.download = filename;
+        link.style.display = 'none';    
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(downloadUrl);
         console.log('Download completed for token:', token);
         
     } catch (error) {
         throw new Error('Download failed: ' + error.message);
     }
 }
+function extractFilenameFromUrl(url) {
+    try {
+        const urlObj = new URL(url);
+        const pathname = urlObj.pathname;
+        const filename = pathname.split('/').pop();
+        return filename && filename !== 'download' ? filename : null;
+    } catch (error) {
+        return null;
+    }
+}
 
-// Utility function to trigger file download
 function downloadBlob(content, filename, mimeType) {
     const blob = new Blob([content], { type: mimeType });
     const url = URL.createObjectURL(blob);
-    
     const link = document.createElement('a');
     link.href = url;
     link.download = filename;
     link.style.display = 'none';
-    
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    
-    // Clean up the URL object
     URL.revokeObjectURL(url);
 }
 
-// Function to validate token format (basic validation)
 function validateToken(token) {
-    // Basic validation: token should be alphanumeric and reasonable length
     if (!token || typeof token !== 'string') {
         return false;
     }
-    
-    // Check if token looks reasonable (alphanumeric, 20+ characters)
     const tokenRegex = /^[a-zA-Z0-9_-]{20,}$/;
     return tokenRegex.test(token);
 }
 
-// Function to get file status (placeholder)
 async function getFileStatus(token) {
-    // This would make an API call to check file status
-    // For now, return a mock response
-    
     try {
-        // Simulate API call
         await new Promise(resolve => setTimeout(resolve, 500));
-        
         return {
             valid: true,
             downloads_remaining: 3,
             expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-            file_size: 1024 * 1024, // 1MB placeholder
+            file_size: 1024 * 1024,
             filename: 'encrypted_file.bin'
         };
     } catch (error) {
@@ -154,7 +156,6 @@ async function getFileStatus(token) {
     }
 }
 
-// Function to clear the download link input
 function clearDownloadLink() {
     const downloadLink = document.getElementById('downloadLink');
     if (downloadLink) {

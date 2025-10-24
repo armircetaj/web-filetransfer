@@ -1,17 +1,28 @@
 {
-  "name": "5_applicativo",
+  "name": "web-file-transfer",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Privacy-first file sharing service with client-side encryption",
+  "main": "server/app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server/app.js",
+    "dev": "nodemon server/app.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "setup-db": "psql -d webfiletransfer -f sql/schema.sql",
+    "cleanup": "node scripts/cleanup.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "libsodium-wrappers": "^0.7.15",
     "multer": "^2.0.2",
     "pg": "^8.16.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
