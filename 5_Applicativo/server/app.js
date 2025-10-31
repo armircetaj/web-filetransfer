@@ -19,6 +19,8 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 app.use(express.static(path.join(__dirname, '../client')));
+// Serve local copy of libsodium browser build to avoid CDN ORB/CORS issues
+app.use('/vendor', express.static(path.join(__dirname, '../node_modules/libsodium-wrappers/dist/browsers')));
 const upload = multer({
     storage: multer.memoryStorage(),
     limits: {
