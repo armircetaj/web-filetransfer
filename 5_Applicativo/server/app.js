@@ -271,40 +271,6 @@ app.get('/health', async (req, res) => {
         });
     }
 });
-app.use((error, req, res, next) => {
-    console.error('Unhandled error:', error);
-    res.status(500).json({ error: 'Internal server error' });
-});
-app.use((req, res) => {
-    res.status(404).json({ error: 'Not found' });
-});
-async function startServer() {
-    try {
-        await ensureStorageDir();
-        const dbConnected = await testConnection();
-        if (!dbConnected) {
-            console.error('Failed to connect to database. Please check your configuration.');
-            process.exit(1);
-        }
-        app.listen(PORT, () => {
-            console.log(`Web File Transfer server running on port ${PORT}`);
-            console.log(`Database connection: ${dbConnected ? 'OK' : 'FAILED'}`);
-            console.log(`Storage directory: ${path.join(__dirname, '../storage')}`);
-        });
-    } catch (error) {
-        console.error('Failed to start server:', error);
-        process.exit(1);
-    }
-}
-process.on('SIGINT', () => {
-    console.log('Received SIGINT, shutting down gracefully...');
-    process.exit(0);
-});
-process.on('SIGTERM', () => {
-    console.log('Received SIGTERM, shutting down gracefully...');
-    process.exit(0);
-});
-
 // Return encrypted metadata (base64) and salt (base64) without consuming a download
 app.get('/metadata/:token', async (req, res) => {
     try {
@@ -345,6 +311,39 @@ app.get('/metadata/:token', async (req, res) => {
         console.error('Metadata error:', error);
         res.status(500).json({ error: 'Failed to get metadata' });
     }
+});
+app.use((error, req, res, next) => {
+    console.error('Unhandled error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+});
+app.use((req, res) => {
+    res.status(404).json({ error: 'Not found' });
+});
+async function startServer() {
+    try {
+        await ensureStorageDir();
+        const dbConnected = await testConnection();
+        if (!dbConnected) {
+            console.error('Failed to connect to database. Please check your configuration.');
+            process.exit(1);
+        }
+        app.listen(PORT, () => {
+            console.log(`Web File Transfer server running on port ${PORT}`);
+            console.log(`Database connection: ${dbConnected ? 'OK' : 'FAILED'}`);
+            console.log(`Storage directory: ${path.join(__dirname, '../storage')}`);
+        });
+    } catch (error) {
+        console.error('Failed to start server:', error);
+        process.exit(1);
+    }
+}
+process.on('SIGINT', () => {
+    console.log('Received SIGINT, shutting down gracefully...');
+    process.exit(0);
+});
+process.on('SIGTERM', () => {
+    console.log('Received SIGTERM, shutting down gracefully...');
+    process.exit(0);
 });
 
 startServer();
