@@ -20,8 +20,7 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 app.use(express.static(path.join(__dirname, '../client')));
 // Serve local copy of libsodium browser build to avoid CDN ORB/CORS issues
-app.use('/vendor', express.static(path.join(__dirname, '../node_modules/libsodium-wrappers/dist/browsers')));
-// Explicit mapping to avoid path mismatches in some environments
+// Explicit mapping to serve libsodium browser build regardless of cwd
 app.get('/vendor/sodium.js', (req, res) => {
     try {
         const sodiumPath = require.resolve('libsodium-wrappers/dist/browsers/sodium.js');
