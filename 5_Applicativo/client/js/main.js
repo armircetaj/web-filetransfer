@@ -1,13 +1,8 @@
-// Web File Transfer - Main JavaScript
-// Common functionality shared across pages
-
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize page-specific functionality
     initializePage();
 });
 
 function initializePage() {
-    // Set active navigation based on current page
     const currentPage = window.location.pathname.split('/').pop();
     const navButtons = document.querySelectorAll('.nav-btn');
     
@@ -22,7 +17,6 @@ function initializePage() {
     });
 }
 
-// Utility function to show loading state
 function showLoading(element, text = 'Processing...') {
     const originalText = element.textContent;
     element.textContent = text;
@@ -36,22 +30,16 @@ function showLoading(element, text = 'Processing...') {
     };
 }
 
-// Utility function to show error messages
 function showError(message, container = null) {
-    // Remove existing notifications
     clearNotifications(container);
-    
-    // Create error notification
     const errorDiv = document.createElement('div');
     errorDiv.className = 'notification-box error';
     errorDiv.textContent = message;
     
-    // Insert after the specified container or find the appropriate container
     const targetContainer = container || findNotificationContainer();
     if (targetContainer) {
         targetContainer.appendChild(errorDiv);
         
-        // Auto remove after fade-out animation completes (7.5 seconds total)
         setTimeout(() => {
             if (errorDiv.parentNode) {
                 errorDiv.remove();
@@ -60,22 +48,15 @@ function showError(message, container = null) {
     }
 }
 
-// Utility function to show success messages
 function showSuccess(message, container = null) {
-    // Remove existing notifications
     clearNotifications(container);
-    
-    // Create success notification
     const successDiv = document.createElement('div');
     successDiv.className = 'notification-box success';
     successDiv.textContent = message;
-    
-    // Insert after the specified container or find the appropriate container
     const targetContainer = container || findNotificationContainer();
     if (targetContainer) {
         targetContainer.appendChild(successDiv);
         
-        // Auto remove after fade-out animation completes (7.5 seconds total)
         setTimeout(() => {
             if (successDiv.parentNode) {
                 successDiv.remove();
@@ -84,22 +65,17 @@ function showSuccess(message, container = null) {
     }
 }
 
-// Utility function to show info messages
 function showInfo(message, container = null) {
-    // Remove existing notifications
     clearNotifications(container);
     
-    // Create info notification
     const infoDiv = document.createElement('div');
     infoDiv.className = 'notification-box info';
     infoDiv.textContent = message;
     
-    // Insert after the specified container or find the appropriate container
     const targetContainer = container || findNotificationContainer();
     if (targetContainer) {
         targetContainer.appendChild(infoDiv);
         
-        // Auto remove after fade-out animation completes (7.5 seconds total)
         setTimeout(() => {
             if (infoDiv.parentNode) {
                 infoDiv.remove();
@@ -108,25 +84,20 @@ function showInfo(message, container = null) {
     }
 }
 
-// Helper function to find the appropriate container for notifications
 function findNotificationContainer() {
-    // Try to find upload area first
     const uploadArea = document.getElementById('uploadArea');
     if (uploadArea) {
         return uploadArea.parentNode;
     }
     
-    // Try to find download form
     const downloadForm = document.querySelector('.download-form');
     if (downloadForm) {
         return downloadForm.parentNode;
     }
     
-    // Fallback to main content
     return document.querySelector('.main-content');
 }
 
-// Helper function to clear existing notifications
 function clearNotifications(container = null) {
     const targetContainer = container || findNotificationContainer();
     if (targetContainer) {
@@ -135,7 +106,6 @@ function clearNotifications(container = null) {
     }
 }
 
-// Add CSS animations for notifications
 const style = document.createElement('style');
 style.textContent = `
     @keyframes slideIn {
@@ -162,14 +132,12 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
-// Copy to clipboard utility
 async function copyToClipboard(text) {
     try {
         await navigator.clipboard.writeText(text);
         showSuccess('Copied to clipboard!');
         return true;
     } catch (err) {
-        // Fallback for older browsers
         const textArea = document.createElement('textarea');
         textArea.value = text;
         textArea.style.position = 'fixed';
@@ -178,7 +146,6 @@ async function copyToClipboard(text) {
         document.body.appendChild(textArea);
         textArea.focus();
         textArea.select();
-        
         try {
             document.execCommand('copy');
             showSuccess('Copied to clipboard!');
@@ -192,7 +159,6 @@ async function copyToClipboard(text) {
     }
 }
 
-// Validate URL format
 function isValidUrl(string) {
     try {
         new URL(string);
@@ -202,12 +168,17 @@ function isValidUrl(string) {
     }
 }
 
-// Extract token from download URL
 function extractTokenFromUrl(url) {
     try {
         const urlObj = new URL(url);
-        const token = urlObj.searchParams.get('token');
-        return token;
+        // Prefer query param first
+        const qpToken = urlObj.searchParams.get('token');
+        if (qpToken) return qpToken;
+        // Fallback: last path segment if it looks like a token (e.g., /download/<token>)
+        const segments = urlObj.pathname.split('/').filter(Boolean);
+        const last = segments[segments.length - 1] || '';
+        const tokenRegex = /^[a-zA-Z0-9_-]{20,}$/;
+        return tokenRegex.test(last) ? last : null;
     } catch (err) {
         return null;
     }

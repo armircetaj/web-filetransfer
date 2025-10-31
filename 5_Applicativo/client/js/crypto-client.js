@@ -8,7 +8,8 @@ class CryptoClient {
         if (this.isInitialized) return;
         
         try {
-            this.sodium = await _sodium.ready;
+            await sodium.ready;
+            this.sodium = sodium;
             this.isInitialized = true;
             console.log('Crypto client initialized successfully');
         } catch (error) {
@@ -70,8 +71,7 @@ class CryptoClient {
             ciphertext,
             null, 
             nonce,
-            key,
-            'text'
+            key
         );
         
         return plaintext;

@@ -23,6 +23,8 @@ const upload = multer({
     storage: multer.memoryStorage(),
     limits: {
         fileSize: 100 * 1024 * 1024,
+        fieldSize: 200 * 1024 * 1024, // allow large base64 fields (~133MB for 100MB data)
+        fields: 20
     },
     fileFilter: (req, file, cb) => {
         cb(null, true);
