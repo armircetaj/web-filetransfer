@@ -21,13 +21,14 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(express.static(path.join(__dirname, '../client')));
 // Serve local copy of libsodium browser build to avoid CDN ORB/CORS issues
 // Explicit mapping to serve libsodium browser build regardless of cwd
-app.get('/vendor/libsodium-wrappers.js', (req, res) => {
+app.get('/vendor/sodium.js', (req, res) => {
     try {
-        const sodiumPath = require.resolve('libsodium-wrappers/dist/modules/libsodium-wrappers.js');
+        // Prefer the browser bundle from the base libsodium package
+        let sodiumPath = require.resolve('libsodium/dist/browsers/sodium.js');
         res.type('application/javascript');
         return res.sendFile(sodiumPath);
     } catch (e) {
-        return res.status(404).send('libsodium-wrappers.js not found');
+        return res.status(404).send('sodium.js not found');
     }
 });
 const upload = multer({
