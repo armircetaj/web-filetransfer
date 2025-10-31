@@ -17,13 +17,9 @@ const PORT = process.env.PORT || 3000;
 
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
-
 app.use(express.static(path.join(__dirname, '../client')));
-// Serve local copy of libsodium browser build to avoid CDN ORB/CORS issues
-// Explicit mapping to serve libsodium browser build regardless of cwd
 app.get('/vendor/sodium.js', (req, res) => {
     try {
-        // Prefer the browser bundle from libsodium-wrappers first (user-provided/official browser build)
         const candidates = [
             'libsodium-wrappers/dist/browser/sodium.js',
             'libsodium-wrappers/dist/browsers/sodium.js',
@@ -47,7 +43,7 @@ const upload = multer({
     storage: multer.memoryStorage(),
     limits: {
         fileSize: 100 * 1024 * 1024,
-        fieldSize: 200 * 1024 * 1024, // allow large base64 fields (~133MB for 100MB data)
+        fieldSize: 200 * 1024 * 1024,
         fields: 20
     },
     fileFilter: (req, file, cb) => {
@@ -66,23 +62,18 @@ function rateLimit(req, res, next) {
         rateLimitMap.set(clientIp, { count: 1, resetTime: now + RATE_LIMIT_WINDOW });
         return next();
     }
-    
     const clientData = rateLimitMap.get(clientIp);
-    
     if (now > clientData.resetTime) {
         clientData.count = 1;
         clientData.resetTime = now + RATE_LIMIT_WINDOW;
         return next();
     }
-    
     if (clientData.count >= RATE_LIMIT_MAX_REQUESTS) {
         return res.status(429).json({ error: 'Rate limit exceeded. Please try again later.' });
     }
-    
     clientData.count++;
     next();
 }
-
 app.use('/api/upload', rateLimit);
 async function ensureStorageDir() {
     const storageDir = path.join(__dirname, '../storage');
@@ -93,13 +84,11 @@ async function ensureStorageDir() {
         console.log('Created storage directory');
     }
 }
-
 function hashToken(token, salt) {
     const tokenBuffer = Buffer.from(token, 'base64');
     const combined = Buffer.concat([tokenBuffer, salt]);
     return crypto.createHash('sha256').update(combined).digest();
 }
-
 async function sendEmailNotification(email, filename, downloadCount) {
     const subject = 'File Download Notification';
     const body = `
@@ -123,11 +112,9 @@ Web File Transfer System
         return false;
     }
 }
-
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../client/index.html'));
 });
-
 app.post('/api/upload', upload.single('file'), async (req, res) => {
     try {
         const {
@@ -139,23 +126,18 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
             expiresAt,
             senderEmail
         } = req.body;
-
         if (!encryptedData || !encryptedMetadata || !salt || !token) {
             return res.status(400).json({ error: 'Missing required fields' });
         }
-
         if (token.length < 32) {
             return res.status(400).json({ error: 'Invalid token format' });
         }
-
         const saltBuffer = Buffer.from(salt, 'base64');
         const encryptedDataBuffer = Buffer.from(encryptedData, 'base64');
         const encryptedMetadataBuffer = Buffer.from(encryptedMetadata, 'base64');
         const fileId = crypto.randomUUID();
         const storagePath = path.join(__dirname, '../storage', `${fileId}.enc`);
-
         await fs.writeFile(storagePath, encryptedDataBuffer);
-
         const tokenHash = hashToken(token, saltBuffer);
         const fileData = {
             tokenHash,
@@ -166,16 +148,13 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
             maxDownloads: parseInt(maxDownloads) || 1,
             expiresAt: expiresAt ? new Date(expiresAt) : null
         };
-
         const fileRecord = await FileModel.create(fileData);
-
         if (senderEmail && senderEmail.trim()) {
             await NotificationModel.create({
                 fileId: fileRecord.id,
                 email: Buffer.from(senderEmail.trim(), 'utf8')
             });
         }
-
         await AuditLogModel.create({
             fileId: fileRecord.id,
             type: 'upload',
@@ -183,30 +162,25 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
             details: `File uploaded, size: ${encryptedDataBuffer.length} bytes`
         });
         const downloadUrl = `${req.protocol}://${req.get('host')}/download/${token}`;
-        
         res.json({
             success: true,
             download_url: downloadUrl,
             token_display: token.substring(0, 16) + '...'
         });
-
     } catch (error) {
         console.error('Upload error:', error);
         res.status(500).json({ error: 'Upload failed' });
     }
 });
-
 app.get('/download/:token', async (req, res) => {
     try {
         const { token } = req.params;
         if (!token || token.length < 32) {
             return res.status(400).json({ error: 'Invalid token format' });
         }
-
         const files = await FileModel.findAll();
         let fileRecord = null;
         let matchedSalt = null;
-
         for (const file of files) {
             const tokenHash = hashToken(token, file.salt);
             if (tokenHash.equals(file.token_hash)) {
@@ -215,16 +189,13 @@ app.get('/download/:token', async (req, res) => {
                 break;
             }
         }
-
         if (!fileRecord) {
             return res.status(404).json({ error: 'File not found or invalid token' });
         }
-
         const isValid = await FileModel.isValidForDownload(fileRecord.id);
         if (!isValid) {
             return res.status(410).json({ error: 'File has expired or download limit reached' });
         }
-
         await FileModel.incrementDownloadCount(fileRecord.id);
         await AuditLogModel.create({
             fileId: fileRecord.id,
@@ -232,7 +203,6 @@ app.get('/download/:token', async (req, res) => {
             actorIp: req.ip,
             details: `File downloaded`
         });
-
         const notification = await NotificationModel.findByFileId(fileRecord.id);
         if (notification && !notification.notified_at) {
             try {
@@ -246,7 +216,6 @@ app.get('/download/:token', async (req, res) => {
                 console.error('Failed to send notification:', error);
             }
         }
-
         res.setHeader('Content-Type', 'application/octet-stream');
         res.setHeader('Content-Length', fileRecord.ciphertext_length);
         res.setHeader('Content-Disposition', 'attachment; filename="encrypted_file.bin"');
@@ -254,21 +223,16 @@ app.get('/download/:token', async (req, res) => {
 
         const fileStream = require('fs').createReadStream(fileRecord.path);
         fileStream.pipe(res);
-
     } catch (error) {
         console.error('Download error:', error);
         res.status(500).json({ error: 'Download failed' });
     }
 });
-
-
 app.get('/status/:token', async (req, res) => {
     try {
         const { token } = req.params;
-
         const files = await FileModel.findAll();
         let fileRecord = null;
-
         for (const file of files) {
             const tokenHash = hashToken(token, file.salt);
             if (tokenHash.equals(file.token_hash)) {
@@ -276,24 +240,20 @@ app.get('/status/:token', async (req, res) => {
                 break;
             }
         }
-
         if (!fileRecord) {
             return res.status(404).json({ error: 'File not found' });
         }
-
         const status = await FileModel.getStatus(fileRecord.id);
         if (!status) {
             return res.status(404).json({ error: 'File not found' });
         }
 
         res.json(status);
-
     } catch (error) {
         console.error('Status error:', error);
         res.status(500).json({ error: 'Failed to get status' });
     }
 });
-
 app.get('/health', async (req, res) => {
     try {
         const dbConnected = await testConnection();
@@ -310,49 +270,39 @@ app.get('/health', async (req, res) => {
         });
     }
 });
-
 app.use((error, req, res, next) => {
     console.error('Unhandled error:', error);
     res.status(500).json({ error: 'Internal server error' });
 });
-
 app.use((req, res) => {
     res.status(404).json({ error: 'Not found' });
 });
-
 async function startServer() {
     try {
-        
         await ensureStorageDir();
-
         const dbConnected = await testConnection();
         if (!dbConnected) {
             console.error('Failed to connect to database. Please check your configuration.');
             process.exit(1);
         }
-
         app.listen(PORT, () => {
             console.log(`Web File Transfer server running on port ${PORT}`);
             console.log(`Database connection: ${dbConnected ? 'OK' : 'FAILED'}`);
             console.log(`Storage directory: ${path.join(__dirname, '../storage')}`);
         });
-
     } catch (error) {
         console.error('Failed to start server:', error);
         process.exit(1);
     }
 }
-
 process.on('SIGINT', () => {
     console.log('Received SIGINT, shutting down gracefully...');
     process.exit(0);
 });
-
 process.on('SIGTERM', () => {
     console.log('Received SIGTERM, shutting down gracefully...');
     process.exit(0);
 });
-
 
 startServer();
 

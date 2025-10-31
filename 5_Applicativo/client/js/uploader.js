@@ -1,5 +1,3 @@
-// Web File Transfer - Upload Functionality
-
 document.addEventListener('DOMContentLoaded', function() {
     initializeUploader();
 });
@@ -9,37 +7,27 @@ function initializeUploader() {
     const fileInput = document.getElementById('fileInput');
     
     if (!uploadArea || !fileInput) return;
-    
-    // Click to select file
     uploadArea.addEventListener('click', () => {
         fileInput.click();
     });
-    
-    // File selection handler
     fileInput.addEventListener('change', handleFileSelection);
-    
-    // Drag and drop handlers
     uploadArea.addEventListener('dragover', handleDragOver);
     uploadArea.addEventListener('dragleave', handleDragLeave);
     uploadArea.addEventListener('drop', handleDrop);
     
-    // Prevent default drag behaviors on document
     document.addEventListener('dragover', (e) => e.preventDefault());
     document.addEventListener('drop', (e) => e.preventDefault());
 }
-
 function handleDragOver(e) {
     e.preventDefault();
     const uploadArea = document.getElementById('uploadArea');
     uploadArea.classList.add('dragover');
 }
-
 function handleDragLeave(e) {
     e.preventDefault();
     const uploadArea = document.getElementById('uploadArea');
     uploadArea.classList.remove('dragover');
 }
-
 function handleDrop(e) {
     e.preventDefault();
     const uploadArea = document.getElementById('uploadArea');
@@ -62,23 +50,15 @@ async function handleFiles(files) {
     if (files.length === 0) return;
     
     const file = files[0];
-    
-    // Update upload area to show selected file
     updateUploadArea(file);
-    
-    // Show metadata configuration form
     showMetadataForm(file);
 }
 
-// Function to show metadata configuration form
 function showMetadataForm(file) {
-    // Remove any existing metadata form
     const existingForm = document.querySelector('.metadata-form');
     if (existingForm) {
         existingForm.remove();
     }
-    
-    // Create metadata form
     const formDiv = document.createElement('div');
     formDiv.className = 'metadata-form';
     formDiv.innerHTML = `
@@ -123,7 +103,6 @@ function showMetadataForm(file) {
     container.insertBefore(formDiv, uploadArea.nextSibling);
     window.selectedFile = file;
 }
-
 function toggleEmailField() {
     const checkbox = document.getElementById('enableNotifications');
     const emailGroup = document.getElementById('emailGroup');
@@ -138,7 +117,6 @@ function toggleEmailField() {
         emailInput.value = '';
     }
 }
-
 function cancelUpload() {
     const form = document.querySelector('.metadata-form');
     if (form) {
@@ -147,7 +125,6 @@ function cancelUpload() {
     resetUploadArea();
     window.selectedFile = null;
 }
-
 async function confirmUpload() {
     if (!window.selectedFile) {
         showError('No file selected');
@@ -190,7 +167,6 @@ async function confirmUpload() {
         expiresAt: expirationDate,
         senderEmail: enableNotifications ? senderEmail : null
     };
-    
     try {
         const uploadBtn = document.querySelector('.btn-primary');
         if (uploadBtn) {
@@ -206,7 +182,6 @@ async function confirmUpload() {
             const result = await uploadFile(window.selectedFile, options);
             showUploadSuccess(result.download_url, result.token_display);
         }
-        
     } catch (error) {
         console.error('Upload error:', error);
         showError('Upload failed: ' + error.message);
@@ -311,7 +286,6 @@ function showUploadSuccess(downloadUrl, tokenDisplay) {
     container.insertBefore(successDiv, uploadArea.nextSibling);
     window.currentUploadSuccess = successDiv;
 }
-
 function closeUploadSuccess() {
     if (window.currentUploadSuccess) {
         window.currentUploadSuccess.remove();
@@ -319,7 +293,6 @@ function closeUploadSuccess() {
         resetUploadArea();
     }
 }
-
 function resetUploadArea() {
     const uploadArea = document.getElementById('uploadArea');
     const uploadText = uploadArea.querySelector('.upload-text');

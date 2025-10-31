@@ -17,12 +17,10 @@ class FileModel {
             VALUES ($1, $2, $3, $4, $5, $6, $7)
             RETURNING id, created_at
         `;
-
         const values = [tokenHash, salt, metadata, path, ciphertextLength, maxDownloads, expiresAt];
         const result = await query(text, values);
         return result.rows[0];
     }
-
     static async findByTokenHash(tokenHash) {
         const text = `
             SELECT id, token_hash, salt, metadata, path, ciphertext_length, 
@@ -34,7 +32,6 @@ class FileModel {
         const result = await query(text, [tokenHash]);
         return result.rows[0] || null;
     }
-
     static async incrementDownloadCount(fileId) {
         const text = `
             UPDATE files 
@@ -46,7 +43,6 @@ class FileModel {
         const result = await query(text, [fileId]);
         return result.rows[0];
     }
-
     static async isValidForDownload(fileId) {
         const text = `
             SELECT id FROM files 
@@ -59,7 +55,6 @@ class FileModel {
         const result = await query(text, [fileId]);
         return result.rows.length > 0;
     }
-
     static async softDelete(fileId) {
         const text = `
             UPDATE files 
@@ -70,17 +65,14 @@ class FileModel {
         const result = await query(text, [fileId]);
         return result.rowCount > 0;
     }
-
     static async getStatus(fileId) {
         const text = `
             SELECT download_count, max_downloads, expires_at, created_at
             FROM files 
             WHERE id = $1 AND deleted_at IS NULL
         `;
-        
         const result = await query(text, [fileId]);
         if (result.rows.length === 0) return null;
-        
         const row = result.rows[0];
         return {
             downloads_remaining: Math.max(0, row.max_downloads - row.download_count),
@@ -88,7 +80,6 @@ class FileModel {
             created_at: row.created_at
         };
     }
-
     static async findAll() {
         const text = `
             SELECT id, token_hash, salt, metadata, path, ciphertext_length, 
@@ -96,11 +87,9 @@ class FileModel {
             FROM files 
             WHERE deleted_at IS NULL
         `;
-        
         const result = await query(text);
         return result.rows;
     }
-
     static async findExpired() {
         const text = `
             SELECT id, path FROM files 
@@ -113,7 +102,6 @@ class FileModel {
         return result.rows;
     }
 }
-
 class NotificationModel {
     static async create(notificationData) {
         const { fileId, email } = notificationData;
@@ -123,12 +111,10 @@ class NotificationModel {
             VALUES ($1, $2)
             RETURNING id, created_at
         `;
-
         const values = [fileId, email];
         const result = await query(text, values);
         return result.rows[0];
     }
-
     static async findByFileId(fileId) {
         const text = `
             SELECT id, email, notified_at, created_at
@@ -138,7 +124,6 @@ class NotificationModel {
         const result = await query(text, [fileId]);
         return result.rows[0] || null;
     }
-
     static async markAsNotified(notificationId) {
         const text = `
             UPDATE notifications 
@@ -148,7 +133,6 @@ class NotificationModel {
         const result = await query(text, [notificationId]);
         return result.rowCount > 0;
     }
-
     static async getPendingNotifications() {
         const text = `
             SELECT n.id, n.file_id, n.email, f.path, f.ciphertext_length
@@ -157,7 +141,6 @@ class NotificationModel {
             WHERE n.notified_at IS NULL 
             AND f.deleted_at IS NULL
         `;
-        
         const result = await query(text);
         return result.rows;
     }
@@ -170,12 +153,10 @@ class AuditLogModel {
             VALUES ($1, $2, $3, $4)
             RETURNING id, time
         `;
-
         const values = [fileId, type, actorIp, details];
         const result = await query(text, values);
         return result.rows[0];
     }
-
     static async findByFileId(fileId) {
         const text = `
             SELECT type, time, actor_ip, details

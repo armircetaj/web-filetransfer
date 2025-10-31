@@ -13,7 +13,6 @@ const dbConfig = {
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 2000,
 };
-
 const pool = new Pool(dbConfig);
 
 async function testConnection() {
@@ -28,7 +27,6 @@ async function testConnection() {
         return false;
     }
 }
-
 async function query(text, params = []) {
     const start = Date.now();
     try {
@@ -41,7 +39,6 @@ async function query(text, params = []) {
         throw error;
     }
 }
-
 async function getClient() {
     try {
         return await pool.connect();
@@ -50,7 +47,6 @@ async function getClient() {
         throw error;
     }
 }
-
 async function closePool() {
     try {
         await pool.end();
@@ -60,19 +56,16 @@ async function closePool() {
         throw error;
     }
 }
-
 process.on('SIGINT', async () => {
     console.log('Received SIGINT, closing database pool...');
     await closePool();
     process.exit(0);
 });
-
 process.on('SIGTERM', async () => {
     console.log('Received SIGTERM, closing database pool...');
     await closePool();
     process.exit(0);
 });
-
 module.exports = {
     pool,
     query,

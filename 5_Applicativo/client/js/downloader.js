@@ -20,7 +20,6 @@ function initializeDownloader() {
         downloadLink.value = `${window.location.origin}/download?token=${token}`;
     }
 }
-
 function handleDecrypt() {
     const downloadLink = document.getElementById('downloadLink');
     const decryptBtn = document.getElementById('decryptBtn');
@@ -42,7 +41,6 @@ function handleDecrypt() {
         downloadLink.focus();
         return;
     }
-    
     const hideLoading = showLoading(decryptBtn, 'Decrypting...');
     downloadAndDecryptFile(url, token)
         .then(() => {
@@ -54,7 +52,6 @@ function handleDecrypt() {
             showError('Download failed: ' + error.message);
         });
 }
-
 async function downloadAndDecryptFile(url, token) {
     try {
         if (!window.cryptoClient.isInitialized) {
@@ -66,7 +63,6 @@ async function downloadAndDecryptFile(url, token) {
             const errorData = await statusResponse.json();
             throw new Error(errorData.error || 'Failed to get file status');
         }
-
         const status = await statusResponse.json();
         if (status.downloads_remaining <= 0) {
             throw new Error('File download limit reached');
@@ -75,19 +71,15 @@ async function downloadAndDecryptFile(url, token) {
         if (status.expires_at && new Date(status.expires_at) < new Date()) {
             throw new Error('File has expired');
         }
-
         const downloadResponse = await fetch(url);
         if (!downloadResponse.ok) {
             const errorData = await downloadResponse.json();
             throw new Error(errorData.error || 'Failed to download file');
         }
-
         const saltBase64 = downloadResponse.headers.get('X-File-Salt');
         if (!saltBase64) {
             throw new Error('Salt not found in response headers');
         }
-
-        // Server sends standard Base64; decode with ORIGINAL variant
         const salt = window.cryptoClient.sodium.from_base64(
             saltBase64,
             window.cryptoClient.sodium.base64_variants.ORIGINAL
@@ -113,7 +105,6 @@ async function downloadAndDecryptFile(url, token) {
         throw new Error('Download failed: ' + error.message);
     }
 }
-
 function showPersistentDownloadSuccess(message) {
     clearNotifications();
     const successDiv = document.createElement('div');
@@ -134,7 +125,6 @@ function extractFilenameFromUrl(url) {
         return null;
     }
 }
-
 function downloadBlob(content, filename, mimeType) {
     const blob = new Blob([content], { type: mimeType });
     const url = URL.createObjectURL(blob);
@@ -155,7 +145,6 @@ function validateToken(token) {
     const tokenRegex = /^[a-zA-Z0-9_-]{20,}$/;
     return tokenRegex.test(token);
 }
-
 async function getFileStatus(token) {
     try {
         await new Promise(resolve => setTimeout(resolve, 500));
@@ -170,7 +159,6 @@ async function getFileStatus(token) {
         throw new Error('Failed to get file status: ' + error.message);
     }
 }
-
 function clearDownloadLink() {
     const downloadLink = document.getElementById('downloadLink');
     if (downloadLink) {

@@ -16,7 +16,6 @@ function initializePage() {
         }
     });
 }
-
 function showLoading(element, text = 'Processing...') {
     const originalText = element.textContent;
     element.textContent = text;
@@ -29,7 +28,6 @@ function showLoading(element, text = 'Processing...') {
         element.style.opacity = '1';
     };
 }
-
 function showError(message, container = null) {
     clearNotifications(container);
     const errorDiv = document.createElement('div');
@@ -47,7 +45,6 @@ function showError(message, container = null) {
         }, 7500);
     }
 }
-
 function showSuccess(message, container = null) {
     clearNotifications(container);
     const successDiv = document.createElement('div');
@@ -64,7 +61,6 @@ function showSuccess(message, container = null) {
         }, 7500);
     }
 }
-
 function showInfo(message, container = null) {
     clearNotifications(container);
     
@@ -83,7 +79,6 @@ function showInfo(message, container = null) {
         }, 7500);
     }
 }
-
 function findNotificationContainer() {
     const uploadArea = document.getElementById('uploadArea');
     if (uploadArea) {
@@ -97,7 +92,6 @@ function findNotificationContainer() {
     
     return document.querySelector('.main-content');
 }
-
 function clearNotifications(container = null) {
     const targetContainer = container || findNotificationContainer();
     if (targetContainer) {
@@ -105,7 +99,6 @@ function clearNotifications(container = null) {
         existingNotifications.forEach(notification => notification.remove());
     }
 }
-
 const style = document.createElement('style');
 style.textContent = `
     @keyframes slideIn {
@@ -131,7 +124,6 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
-
 async function copyToClipboard(text) {
     try {
         await navigator.clipboard.writeText(text);
@@ -158,7 +150,6 @@ async function copyToClipboard(text) {
         }
     }
 }
-
 function isValidUrl(string) {
     try {
         new URL(string);
@@ -167,7 +158,6 @@ function isValidUrl(string) {
         return false;
     }
 }
-
 function extractTokenFromUrl(url) {
     try {
         const urlObj = new URL(url);
