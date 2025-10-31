@@ -23,10 +23,22 @@ app.use(express.static(path.join(__dirname, '../client')));
 // Explicit mapping to serve libsodium browser build regardless of cwd
 app.get('/vendor/sodium.js', (req, res) => {
     try {
-        // Prefer the browser bundle from the base libsodium package
-        let sodiumPath = require.resolve('libsodium/dist/browsers/sodium.js');
+        // Prefer the browser bundle from libsodium-wrappers first (user-provided/official browser build)
+        const candidates = [
+            'libsodium-wrappers/dist/browser/sodium.js',
+            'libsodium-wrappers/dist/browsers/sodium.js',
+            'libsodium/dist/browsers/sodium.js'
+        ];
+        let resolved;
+        for (const c of candidates) {
+            try {
+                resolved = require.resolve(c);
+                break;
+            } catch (_) {}
+        }
+        if (!resolved) throw new Error('sodium.js not found in known locations');
         res.type('application/javascript');
-        return res.sendFile(sodiumPath);
+        return res.sendFile(resolved);
     } catch (e) {
         return res.status(404).send('sodium.js not found');
     }

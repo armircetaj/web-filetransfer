@@ -47,7 +47,7 @@ function handleDecrypt() {
     downloadAndDecryptFile(url, token)
         .then(() => {
             hideLoading();
-            showSuccess('File downloaded and decrypted successfully!');
+            showPersistentDownloadSuccess('File downloaded and decrypted successfully!');
         })
         .catch((error) => {
             hideLoading();
@@ -87,7 +87,11 @@ async function downloadAndDecryptFile(url, token) {
             throw new Error('Salt not found in response headers');
         }
 
-        const salt = window.cryptoClient.base64ToBytes(saltBase64);
+        // Server sends standard Base64; decode with ORIGINAL variant
+        const salt = window.cryptoClient.sodium.from_base64(
+            saltBase64,
+            window.cryptoClient.sodium.base64_variants.ORIGINAL
+        );
         const encryptedFileData = await downloadResponse.arrayBuffer();
         const encryptedFileBytes = new Uint8Array(encryptedFileData);
         const decryptionKey = window.cryptoClient.deriveKey(token, salt);
@@ -107,6 +111,17 @@ async function downloadAndDecryptFile(url, token) {
         
     } catch (error) {
         throw new Error('Download failed: ' + error.message);
+    }
+}
+
+function showPersistentDownloadSuccess(message) {
+    clearNotifications();
+    const successDiv = document.createElement('div');
+    successDiv.className = 'notification-box success persistent';
+    successDiv.textContent = message;
+    const container = findNotificationContainer();
+    if (container) {
+        container.appendChild(successDiv);
     }
 }
 function extractFilenameFromUrl(url) {

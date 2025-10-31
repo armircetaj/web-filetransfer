@@ -31,11 +31,14 @@ class CryptoClient {
         return this.sodium.randombytes_buf(32);
     }
 
-    deriveKey(token, salt, info = "securewebtransfer") {
+    deriveKey(token, salt, context = "WEBXFER1") {
         if (!this.isInitialized) throw new Error('Crypto client not initialized');
         const tokenBytes = this.sodium.from_base64(token, this.sodium.base64_variants.URLSAFE_NO_PADDING);
-        const infoBytes = new TextEncoder().encode(info);
-        const key = this.sodium.crypto_kdf_derive_from_key(32, 1, "webtransfer", tokenBytes);
+        const ctxString = String(context);
+        if (ctxString.length !== 8) {
+            throw new Error('KDF context must be exactly 8 ASCII characters');
+        }
+        const key = this.sodium.crypto_kdf_derive_from_key(32, 1, ctxString, tokenBytes);
         const saltedKey = new Uint8Array(32);
         for (let i = 0; i < 32; i++) {
             saltedKey[i] = key[i] ^ salt[i];

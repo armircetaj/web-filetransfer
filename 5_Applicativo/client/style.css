@@ -421,6 +421,10 @@ body {
     position: relative;
 }
 
+.notification-box.persistent {
+    animation: slideDown 0.3s ease; /* no auto fade out */
+}
+
 .notification-box::before {
     content: '';
     display: inline-block;

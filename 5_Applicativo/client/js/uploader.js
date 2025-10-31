@@ -292,7 +292,7 @@ function showUploadSuccess(downloadUrl, tokenDisplay) {
         form.remove();
     }
     const successDiv = document.createElement('div');
-    successDiv.className = 'notification-box success';
+    successDiv.className = 'notification-box success persistent';
     successDiv.innerHTML = `
         <div style="margin-bottom: 1rem;">
             <strong>Upload Successful!</strong><br>
