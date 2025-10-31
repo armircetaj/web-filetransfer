@@ -94,7 +94,7 @@ async function sendEmailNotification(email, filename, downloadCount) {
     const body = `
 Hello,
 
-Your file "${filename}" has been downloaded ${downloadCount} time(s).
+Your file has been downloaded ${downloadCount} time(s).
 
 This is an automated notification from Web File Transfer.
 
@@ -103,7 +103,8 @@ Web File Transfer System
     `.trim();
 
     try {
-        const command = `echo "${body}" | mail -s "${subject}" "${email}"`;
+        const fromAddress = process.env.NOTIFY_FROM || 'noreply@webfiletransfer.local';
+        const command = `echo "${body}" | mail -aFrom:'${fromAddress}' -s "${subject}" "${email}"`;
         await execAsync(command);
         console.log(`Email notification sent to ${email}`);
         return true;
@@ -302,6 +303,48 @@ process.on('SIGINT', () => {
 process.on('SIGTERM', () => {
     console.log('Received SIGTERM, shutting down gracefully...');
     process.exit(0);
+});
+
+// Return encrypted metadata (base64) and salt (base64) without consuming a download
+app.get('/metadata/:token', async (req, res) => {
+    try {
+        const { token } = req.params;
+
+        const files = await FileModel.findAll();
+        let fileRecord = null;
+
+        for (const file of files) {
+            const tokenHash = hashToken(token, file.salt);
+            if (tokenHash.equals(file.token_hash)) {
+                fileRecord = file;
+                break;
+            }
+        }
+
+        if (!fileRecord) {
+            return res.status(404).json({ error: 'File not found' });
+        }
+
+        const status = await FileModel.getStatus(fileRecord.id);
+        if (!status) {
+            return res.status(404).json({ error: 'File not found' });
+        }
+        if (status.expires_at && new Date(status.expires_at) <= new Date()) {
+            return res.status(410).json({ error: 'File has expired' });
+        }
+        if (status.downloads_remaining <= 0) {
+            return res.status(410).json({ error: 'Download limit reached' });
+        }
+
+        res.setHeader('Cache-Control', 'no-store');
+        return res.json({
+            encrypted_metadata_base64: fileRecord.metadata.toString('base64'),
+            salt_base64: fileRecord.salt.toString('base64')
+        });
+    } catch (error) {
+        console.error('Metadata error:', error);
+        res.status(500).json({ error: 'Failed to get metadata' });
+    }
 });
 
 startServer();

@@ -71,6 +71,24 @@ async function downloadAndDecryptFile(url, token) {
         if (status.expires_at && new Date(status.expires_at) < new Date()) {
             throw new Error('File has expired');
         }
+        // Fetch encrypted metadata to derive original filename client-side (privacy-preserving)
+        const metadataResponse = await fetch(`/metadata/${token}`);
+        if (!metadataResponse.ok) {
+            const errorData = await metadataResponse.json();
+            throw new Error(errorData.error || 'Failed to get metadata');
+        }
+        const metaJson = await metadataResponse.json();
+        const metaSalt = window.cryptoClient.sodium.from_base64(
+            metaJson.salt_base64,
+            window.cryptoClient.sodium.base64_variants.ORIGINAL
+        );
+        const metaKey = window.cryptoClient.deriveKey(token, metaSalt);
+        const encMeta = window.cryptoClient.sodium.from_base64(
+            metaJson.encrypted_metadata_base64,
+            window.cryptoClient.sodium.base64_variants.ORIGINAL
+        );
+        const metadata = window.cryptoClient.decryptMetadata(encMeta, metaKey);
+
         const downloadResponse = await fetch(url);
         if (!downloadResponse.ok) {
             const errorData = await downloadResponse.json();
@@ -90,7 +108,7 @@ async function downloadAndDecryptFile(url, token) {
         const decryptedFileData = window.cryptoClient.decryptFile(encryptedFileBytes, decryptionKey);
         const blob = new Blob([decryptedFileData]);
         const downloadUrl = URL.createObjectURL(blob);
-        const filename = extractFilenameFromUrl(url) || 'downloaded_file';
+        const filename = (metadata && metadata.filename) || extractFilenameFromUrl(url) || 'downloaded_file';
         const link = document.createElement('a');
         link.href = downloadUrl;
         link.download = filename;
