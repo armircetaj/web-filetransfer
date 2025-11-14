@@ -42,11 +42,31 @@ app.get('/vendor/sodium.js', (req, res) => {
 // Serve Motion bundled file
 app.get('/vendor/motion.js', (req, res) => {
     try {
-        const motionPath = require.resolve('motion/dist/motion.js');
+        // Try different possible paths
+        let motionPath;
+        try {
+            motionPath = require.resolve('motion/dist/motion.js');
+        } catch (e) {
+            // Fallback: construct path manually
+            try {
+                const motionPackagePath = require.resolve('motion/package.json');
+                motionPath = path.join(path.dirname(motionPackagePath), 'dist', 'motion.js');
+            } catch (e2) {
+                console.error('Motion bundle error:', e2);
+                return res.status(404).send('Motion not found: ' + e2.message);
+            }
+        }
+        
+        // Verify file exists
+        if (!fs.existsSync(motionPath)) {
+            return res.status(404).send('Motion file not found at: ' + motionPath);
+        }
+        
         res.type('application/javascript');
         return res.sendFile(motionPath);
     } catch (e) {
-        return res.status(404).send('Motion not found');
+        console.error('Motion bundle error:', e);
+        return res.status(404).send('Motion not found: ' + e.message);
     }
 });
 const upload = multer({
