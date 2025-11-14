@@ -39,6 +39,16 @@ app.get('/vendor/sodium.js', (req, res) => {
         return res.status(404).send('sodium.js not found');
     }
 });
+// Serve Motion bundled file
+app.get('/vendor/motion.js', (req, res) => {
+    try {
+        const motionPath = require.resolve('motion/dist/motion.js');
+        res.type('application/javascript');
+        return res.sendFile(motionPath);
+    } catch (e) {
+        return res.status(404).send('Motion not found');
+    }
+});
 const upload = multer({
     storage: multer.memoryStorage(),
     limits: {
