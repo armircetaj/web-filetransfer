@@ -7,7 +7,7 @@
     "start": "node server/app.js",
     "dev": "nodemon server/app.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "setup-db": "psql -d webfiletransfer -f sql/schema.sql",
+    "setup-db": "psql -d wft -f sql/schema.sql",
     "cleanup": "node scripts/cleanup.js"
   },
   "author": "",
@@ -16,6 +16,7 @@
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "libsodium-wrappers": "^0.7.15",
+    "motion": "^12.23.24",
     "multer": "^2.0.2",
     "pg": "^8.16.3"
   },

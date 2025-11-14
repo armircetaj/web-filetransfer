@@ -96,13 +96,36 @@ body {
 }
 .glass-container {
     background: linear-gradient(to top, #373737 0%, #000000 40%);
-    border: 1px solid white;
+    border: none;
     border-radius: 49px;
     padding: 2.5rem;
     position: relative;
-    overflow: hidden;
     width: 100%;
     max-width: 1200px;
+}
+
+.glass-container::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 49px;
+    padding: 1px;
+    background: linear-gradient(to top, #b1b1b1, #000000, #b1b1b1);
+    -webkit-mask: 
+        linear-gradient(#fff 0 0) content-box, 
+        linear-gradient(#fff 0 0);
+    -webkit-mask-composite: destination-out;
+    mask: 
+        linear-gradient(#fff 0 0) content-box, 
+        linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.glass-container > * {
+    position: relative;
+    z-index: 1;
 }
 .upload-area {
     width: 100%;
@@ -149,12 +172,35 @@ body {
 }
 .feature-card {
     background: linear-gradient(to bottom, #000000 60%, #3f3f3f 100%);
-    border: 1px solid white;
+    border: none;
     border-radius: 16px;
     padding: 2rem;
     text-align: center;
     position: relative;
-    overflow: hidden;
+}
+
+.feature-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 16px;
+    padding: 1px;
+    background: linear-gradient(to top, #b1b1b1, #000000, #b1b1b1);
+    -webkit-mask: 
+        linear-gradient(#fff 0 0) content-box, 
+        linear-gradient(#fff 0 0);
+    -webkit-mask-composite: destination-out;
+    mask: 
+        linear-gradient(#fff 0 0) content-box, 
+        linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.feature-card > * {
+    position: relative;
+    z-index: 1;
 }
 .feature-card-title {
     font-size: 1.1rem;
