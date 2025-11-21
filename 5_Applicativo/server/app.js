@@ -20,35 +20,14 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(express.static(path.join(__dirname, '../client')));
 app.get('/vendor/sodium.js', (req, res) => {
     try {
-        const candidates = [
-            'libsodium-wrappers/dist/browser/sodium.js',
-            'libsodium/dist/browsers/sodium.js'
-        ];
-        let resolved;
-        for (const c of candidates) {
-            try {
-                resolved = require.resolve(c);
-                break;
-            } catch (_) {}
-        }
-        if (!resolved) throw new Error('sodium.js not found in known locations');
+	const resolved = require.resolve('libsodium-wrappers/dist/browser/sodium.js');    
         res.type('application/javascript');
         return res.sendFile(resolved);
     } catch (e) {
         return res.status(404).send('sodium.js not found');
     }
 });
-// Serve Motion bundled file
-app.get('/vendor/motion.js', (req, res) => {
-    try {
-        let motionPath = require.resolve('motion/dist/motion.js');
-        res.type('application/javascript');
-        return res.sendFile(motionPath);
-    } catch (e) {
-        console.error('Motion bundle error:', e);
-        return res.status(404).send('Motion not found: ' + e.message);
-    }
-});
+
 const upload = multer({
     storage: multer.memoryStorage(),
     limits: {
