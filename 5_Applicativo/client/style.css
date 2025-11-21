@@ -93,6 +93,7 @@ body {
     margin-bottom: 4rem;
     text-align: center;
     font-weight: 500;
+    opacity: 0;
 }
 .glass-container {
     background: linear-gradient(to top, #373737 0%, #000000 40%);
@@ -102,6 +103,7 @@ body {
     position: relative;
     width: 100%;
     max-width: 1200px;
+    opacity: 0;
 }
 
 .glass-container::before {
@@ -177,6 +179,7 @@ body {
     padding: 2rem;
     text-align: center;
     position: relative;
+    opacity: 0;
 }
 
 .feature-card::before {
@@ -229,6 +232,7 @@ body {
 .download-form {
     width: 100%;
     max-width: 1000px;
+    opacity: 0;
 }
 .form-group {
     margin-bottom: 1.5rem;
@@ -279,6 +283,7 @@ body {
     margin-top: 3rem;
     width: 100%;
     max-width: 1000px;
+    opacity: 0;
 }
 .how-it-works-title {
     font-size: 1.1rem;
