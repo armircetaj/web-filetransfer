@@ -15,8 +15,8 @@ const execAsync = promisify(exec);
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+app.use(express.json({ limit: '100mb' }));
+app.use(express.urlencoded({ extended: true, limit: '100mb' }));
 app.use(express.static(path.join(__dirname, '../client')));
 app.get('/vendor/sodium.js', (req, res) => {
     try {
@@ -32,7 +32,7 @@ const upload = multer({
     storage: multer.memoryStorage(),
     limits: {
         fileSize: 100 * 1024 * 1024,
-        fieldSize: 200 * 1024 * 1024,
+        fieldSize: 130 * 1024 * 1024,
         fields: 20
     },
     fileFilter: (req, file, cb) => {

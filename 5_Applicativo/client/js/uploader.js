@@ -49,6 +49,12 @@ function handleFileSelection(e) {
 async function handleFiles(files) {
     if (files.length === 0) return;
     
+    const MAX_FILE_SIZE = 100 * 1024 * 1024;
+
+    if (encryptedDataBuffer.length > MAX_FILE_SIZE) {
+       return res.status(413).json({ error: 'File too large. Maximum allowed size is 100MB.' });
+    }
+
     const file = files[0];
     updateUploadArea(file);
     showMetadataForm(file);
