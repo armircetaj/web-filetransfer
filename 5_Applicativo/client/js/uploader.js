@@ -50,12 +50,11 @@ async function handleFiles(files) {
     if (files.length === 0) return;
     
     const MAX_FILE_SIZE = 100 * 1024 * 1024;
-
-    if (encryptedDataBuffer.length > MAX_FILE_SIZE) {
-       return res.status(413).json({ error: 'File too large. Maximum allowed size is 100MB.' });
-    }
-
     const file = files[0];
+    if (file.size > MAX_FILE_SIZE) {
+       showError('File too large. Maximum allowed size is 100MB.');
+       return;
+    }
     updateUploadArea(file);
     showMetadataForm(file);
 }
@@ -208,16 +207,6 @@ function updateUploadArea(file) {
     }
     uploadArea.style.borderColor = 'rgba(34, 197, 94, 0.6)';
     uploadArea.style.background = 'rgba(34, 197, 94, 0.1)';
-}
-
-function formatFileSize(bytes) {
-    if (bytes === 0) return '0 Bytes';
-    
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 async function uploadFile(file, options = {}) {
     try {

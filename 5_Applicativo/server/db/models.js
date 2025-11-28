@@ -55,16 +55,6 @@ class FileModel {
         const result = await query(text, [fileId]);
         return result.rows.length > 0;
     }
-    static async softDelete(fileId) {
-        const text = `
-            UPDATE files 
-            SET deleted_at = NOW() 
-            WHERE id = $1 AND deleted_at IS NULL
-        `;
-        
-        const result = await query(text, [fileId]);
-        return result.rowCount > 0;
-    }
     static async getStatus(fileId) {
         const text = `
             SELECT download_count, max_downloads, expires_at, created_at
@@ -79,27 +69,6 @@ class FileModel {
             expires_at: row.expires_at,
             created_at: row.created_at
         };
-    }
-    static async findAll() {
-        const text = `
-            SELECT id, token_hash, salt, metadata, path, ciphertext_length, 
-                   max_downloads, download_count, expires_at, created_at
-            FROM files 
-            WHERE deleted_at IS NULL
-        `;
-        const result = await query(text);
-        return result.rows;
-    }
-    static async findExpired() {
-        const text = `
-            SELECT id, path FROM files 
-            WHERE expires_at IS NOT NULL 
-            AND expires_at <= NOW() 
-            AND deleted_at IS NULL
-        `;
-        
-        const result = await query(text);
-        return result.rows;
     }
 }
 class NotificationModel {
@@ -116,13 +85,13 @@ class NotificationModel {
         return result.rows[0];
     }
     static async findByFileId(fileId) {
-        const text = `
-            SELECT id, email, notified_at, created_at
-            FROM notifications 
-            WHERE file_id = $1
-        `;
-        const result = await query(text, [fileId]);
-        return result.rows[0] || null;
+	const text = `
+	    SELECT id, email, notified_at, created_at
+	    FROM notifications
+	    WHERE file_id = $1
+	`;
+	const result = await query(text, [fileId]);
+	return result.rows[0] || null;
     }
     static async markAsNotified(notificationId) {
         const text = `
@@ -132,17 +101,6 @@ class NotificationModel {
         `;
         const result = await query(text, [notificationId]);
         return result.rowCount > 0;
-    }
-    static async getPendingNotifications() {
-        const text = `
-            SELECT n.id, n.file_id, n.email, f.path, f.ciphertext_length
-            FROM notifications n
-            JOIN files f ON n.file_id = f.id
-            WHERE n.notified_at IS NULL 
-            AND f.deleted_at IS NULL
-        `;
-        const result = await query(text);
-        return result.rows;
     }
 }
 class AuditLogModel {
@@ -156,17 +114,6 @@ class AuditLogModel {
         const values = [fileId, type, actorIp, details];
         const result = await query(text, values);
         return result.rows[0];
-    }
-    static async findByFileId(fileId) {
-        const text = `
-            SELECT type, time, actor_ip, details
-            FROM audit_logs 
-            WHERE file_id = $1
-            ORDER BY time DESC
-        `;
-        
-        const result = await query(text, [fileId]);
-        return result.rows;
     }
 }
 module.exports = {

@@ -79,21 +79,9 @@ class CryptoClient {
         const metadataJson = new TextDecoder().decode(metadataBytes);
         return JSON.parse(metadataJson);
     }
-    hashToken(token, salt) {
-        if (!this.isInitialized) throw new Error('Crypto client not initialized');
-        const tokenBytes = this.sodium.from_base64(token, this.sodium.base64_variants.URLSAFE_NO_PADDING);
-        const combined = new Uint8Array(tokenBytes.length + salt.length);
-        combined.set(tokenBytes, 0);
-        combined.set(salt, tokenBytes.length);
-        return this.sodium.crypto_hash_sha256(combined);
-    }
     bytesToBase64(bytes) {
         if (!this.isInitialized) throw new Error('Crypto client not initialized');
         return this.sodium.to_base64(bytes, this.sodium.base64_variants.URLSAFE_NO_PADDING);
-    }
-    base64ToBytes(base64) {
-        if (!this.isInitialized) throw new Error('Crypto client not initialized');
-        return this.sodium.from_base64(base64, this.sodium.base64_variants.URLSAFE_NO_PADDING);
     }
 }
 window.cryptoClient = new CryptoClient();
