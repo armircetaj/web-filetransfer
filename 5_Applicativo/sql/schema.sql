@@ -28,3 +28,5 @@ CREATE TABLE audit_logs (
     actor_ip INET,
     details TEXT
 );
+
+CREATE UNIQUE INDEX idx_files_token_hash ON files(token_hash);

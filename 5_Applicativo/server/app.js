@@ -12,6 +12,24 @@ const { FileModel, NotificationModel, AuditLogModel } = require('./db/models');
 
 const execAsync = promisify(exec);
 
+const TOKEN_HASH_SECRET = process.env.TOKEN_HASH_SECRET;
+if (!TOKEN_HASH_SECRET) {
+    throw new Error('TOKEN_HASH_SECRET environment variable must be set (base64 encoded)');
+}
+const tokenHashKey = Buffer.from(TOKEN_HASH_SECRET, 'base64');
+if (tokenHashKey.length === 0) {
+    throw new Error('TOKEN_HASH_SECRET must decode to a non-empty value');
+}
+function decodeUrlSafeBase64(value) {
+    const normalized = value.replace(/-/g, '+').replace(/_/g, '/');
+    const padding = normalized.length % 4 === 0 ? '' : '='.repeat(4 - (normalized.length % 4));
+    return Buffer.from(normalized + padding, 'base64');
+}
+function deriveTokenHash(token) {
+    const tokenBytes = decodeUrlSafeBase64(token);
+    return crypto.createHmac('sha256', tokenHashKey).update(tokenBytes).digest();
+}
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -64,6 +82,9 @@ function rateLimit(req, res, next) {
     next();
 }
 app.use('/api/upload', rateLimit);
+app.use('/download', rateLimit);
+app.use('/status', rateLimit);
+app.use('/metadata', rateLimit);
 async function ensureStorageDir() {
     const storageDir = path.join(__dirname, '../storage');
     try {
@@ -72,11 +93,6 @@ async function ensureStorageDir() {
         await fs.mkdir(storageDir, { recursive: true });
         console.log('Created storage directory');
     }
-}
-function hashToken(token, salt) {
-    const tokenBuffer = Buffer.from(token, 'base64');
-    const combined = Buffer.concat([tokenBuffer, salt]);
-    return crypto.createHash('sha256').update(combined).digest();
 }
 async function sendEmailNotification(email, filename, downloadCount) {
     const subject = 'File Download Notification';
@@ -128,7 +144,7 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
         const fileId = crypto.randomUUID();
         const storagePath = path.join(__dirname, '../storage', `${fileId}.enc`);
         await fs.writeFile(storagePath, encryptedDataBuffer);
-        const tokenHash = hashToken(token, saltBuffer);
+        const tokenHash = deriveTokenHash(token);
         const fileData = {
             tokenHash,
             salt: saltBuffer,
@@ -168,17 +184,8 @@ app.get('/download/:token', async (req, res) => {
         if (!token || token.length < 32) {
             return res.status(400).json({ error: 'Invalid token format' });
         }
-        const files = await FileModel.findAll();
-        let fileRecord = null;
-        let matchedSalt = null;
-        for (const file of files) {
-            const tokenHash = hashToken(token, file.salt);
-            if (tokenHash.equals(file.token_hash)) {
-                fileRecord = file;
-                matchedSalt = file.salt;
-                break;
-            }
-        }
+        const tokenHash = deriveTokenHash(token);
+        const fileRecord = await FileModel.findByTokenHash(tokenHash);
         if (!fileRecord) {
             return res.status(404).json({ error: 'File not found or invalid token' });
         }
@@ -221,15 +228,11 @@ app.get('/download/:token', async (req, res) => {
 app.get('/status/:token', async (req, res) => {
     try {
         const { token } = req.params;
-        const files = await FileModel.findAll();
-        let fileRecord = null;
-        for (const file of files) {
-            const tokenHash = hashToken(token, file.salt);
-            if (tokenHash.equals(file.token_hash)) {
-                fileRecord = file;
-                break;
-            }
+        if (!token || token.length < 32) {
+            return res.status(400).json({ error: 'Invalid token format' });
         }
+        const tokenHash = deriveTokenHash(token);
+        const fileRecord = await FileModel.findByTokenHash(tokenHash);
         if (!fileRecord) {
             return res.status(404).json({ error: 'File not found' });
         }
@@ -264,18 +267,11 @@ app.get('/health', async (req, res) => {
 app.get('/metadata/:token', async (req, res) => {
     try {
         const { token } = req.params;
-
-        const files = await FileModel.findAll();
-        let fileRecord = null;
-
-        for (const file of files) {
-            const tokenHash = hashToken(token, file.salt);
-            if (tokenHash.equals(file.token_hash)) {
-                fileRecord = file;
-                break;
-            }
+        if (!token || token.length < 32) {
+            return res.status(400).json({ error: 'Invalid token format' });
         }
-
+        const tokenHash = deriveTokenHash(token);
+        const fileRecord = await FileModel.findByTokenHash(tokenHash);
         if (!fileRecord) {
             return res.status(404).json({ error: 'File not found' });
         }
