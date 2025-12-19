@@ -1,5 +1,5 @@
 const { query, getClient } = require('./connection');
-
+// Modello per gestione file nel database
 class FileModel {
     static async create(fileData) {
         const {
@@ -21,6 +21,7 @@ class FileModel {
         const result = await query(text, values);
         return result.rows[0];
     }
+    // Trova un file per il suo hash del token O(1), usa un indice
     static async findByTokenHash(tokenHash) {
         const text = `
             SELECT id, token_hash, salt, metadata, path, ciphertext_length, 
@@ -55,6 +56,7 @@ class FileModel {
         const result = await query(text, [fileId]);
         return result.rows.length > 0;
     }
+    // Verifica lo stato di un file per un download (limite di download e scadenza)
     static async getStatus(fileId) {
         const text = `
             SELECT download_count, max_downloads, expires_at, created_at

@@ -71,7 +71,7 @@ async function downloadAndDecryptFile(url, token) {
         if (status.expires_at && new Date(status.expires_at) < new Date()) {
             throw new Error('File has expired');
         }
-        // Fetch encrypted metadata to derive original filename client-side (privacy-preserving)
+        // Recupera metadati crittografati per ottenere nome file originale lato client
         const metadataResponse = await fetch(`/metadata/${token}`);
         if (!metadataResponse.ok) {
             const errorData = await metadataResponse.json();
@@ -89,6 +89,7 @@ async function downloadAndDecryptFile(url, token) {
         );
         const metadata = window.cryptoClient.decryptMetadata(encMeta, metaKey);
 
+        // Scarica il file crittografato e decrittografa lato client
         const downloadResponse = await fetch(url);
         if (!downloadResponse.ok) {
             const errorData = await downloadResponse.json();
@@ -104,8 +105,11 @@ async function downloadAndDecryptFile(url, token) {
         );
         const encryptedFileData = await downloadResponse.arrayBuffer();
         const encryptedFileBytes = new Uint8Array(encryptedFileData);
+        // Deriva la chiave di decifratura dal token e salt
         const decryptionKey = window.cryptoClient.deriveKey(token, salt);
+        // Decrittografa il file usando la chiave di decifratura
         const decryptedFileData = window.cryptoClient.decryptFile(encryptedFileBytes, decryptionKey);
+        // Crea un Blob per il file decrittografato
         const blob = new Blob([decryptedFileData]);
         const downloadUrl = URL.createObjectURL(blob);
         const filename = (metadata && metadata.filename) || extractFilenameFromUrl(url) || 'downloaded_file';

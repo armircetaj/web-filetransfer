@@ -11,7 +11,7 @@ const { testConnection } = require('./db/connection');
 const { FileModel, NotificationModel, AuditLogModel } = require('./db/models');
 
 const execAsync = promisify(exec);
-
+// Configurazione variabile d'ambiente per hash token (HMAC)
 const TOKEN_HASH_SECRET = process.env.TOKEN_HASH_SECRET;
 if (!TOKEN_HASH_SECRET) {
     throw new Error('TOKEN_HASH_SECRET environment variable must be set (base64 encoded)');
@@ -20,11 +20,13 @@ const tokenHashKey = Buffer.from(TOKEN_HASH_SECRET, 'base64');
 if (tokenHashKey.length === 0) {
     throw new Error('TOKEN_HASH_SECRET must decode to a non-empty value');
 }
+// Normalizza la base64 URL-safe per decodifica
 function decodeUrlSafeBase64(value) {
     const normalized = value.replace(/-/g, '+').replace(/_/g, '/');
     const padding = normalized.length % 4 === 0 ? '' : '='.repeat(4 - (normalized.length % 4));
     return Buffer.from(normalized + padding, 'base64');
 }
+// Deriva hash del token usando HMAC SHA-256 per lookup O(1) (indice)
 function deriveTokenHash(token) {
     const tokenBytes = decodeUrlSafeBase64(token);
     return crypto.createHmac('sha256', tokenHashKey).update(tokenBytes).digest();
@@ -57,8 +59,9 @@ const upload = multer({
         cb(null, true);
     }
 });
+// Rate limiting per prevenire abusi negli endpoint
 const rateLimitMap = new Map();
-const RATE_LIMIT_WINDOW = 15 * 60 * 1000;
+const RATE_LIMIT_WINDOW = 15 * 60 * 1000; // 15 minuti
 const RATE_LIMIT_MAX_REQUESTS = 10;
 
 function rateLimit(req, res, next) {
@@ -121,6 +124,7 @@ Web File Transfer System
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../client/index.html'));
 });
+// Endpoint upload: riceve file gia crittografato lato client
 app.post('/api/upload', upload.single('file'), async (req, res) => {
     try {
         const {
@@ -144,6 +148,7 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
         const fileId = crypto.randomUUID();
         const storagePath = path.join(__dirname, '../storage', `${fileId}.enc`);
         await fs.writeFile(storagePath, encryptedDataBuffer);
+        // Calcola hash del token per lookup O(1) (indice)
         const tokenHash = deriveTokenHash(token);
         const fileData = {
             tokenHash,
@@ -178,6 +183,7 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
         res.status(500).json({ error: 'Upload failed' });
     }
 });
+// Endpoint download: lookup tramite hash token
 app.get('/download/:token', async (req, res) => {
     try {
         const { token } = req.params;
@@ -213,6 +219,7 @@ app.get('/download/:token', async (req, res) => {
                 console.error('Failed to send notification:', error);
             }
         }
+        // Invia il file crittografato con il salt nell'header per la decrittografia lato client
         res.setHeader('Content-Type', 'application/octet-stream');
         res.setHeader('Content-Length', fileRecord.ciphertext_length);
         res.setHeader('Content-Disposition', 'attachment; filename="encrypted_file.bin"');
@@ -225,6 +232,7 @@ app.get('/download/:token', async (req, res) => {
         res.status(500).json({ error: 'Download failed' });
     }
 });
+// Endpoint status: ritorna lo stato di un file per download (limite di download e scadenza)
 app.get('/status/:token', async (req, res) => {
     try {
         const { token } = req.params;
@@ -247,6 +255,7 @@ app.get('/status/:token', async (req, res) => {
         res.status(500).json({ error: 'Failed to get status' });
     }
 });
+// Endpoint generale per verificare lo stato del server e del database
 app.get('/health', async (req, res) => {
     try {
         const dbConnected = await testConnection();
@@ -263,7 +272,7 @@ app.get('/health', async (req, res) => {
         });
     }
 });
-// Return encrypted metadata (base64) and salt (base64) without consuming a download
+// Endpoint metadata: ritorna metadati crittografati per ottenere nome file originale lato client
 app.get('/metadata/:token', async (req, res) => {
     try {
         const { token } = req.params;

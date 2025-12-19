@@ -45,11 +45,11 @@ function handleFileSelection(e) {
         handleFiles(files);
     }
 }
-
+// Gestisce la selezione del file e verifica la dimensione massima
 async function handleFiles(files) {
     if (files.length === 0) return;
     
-    const MAX_FILE_SIZE = 100 * 1024 * 1024;
+    const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
     const file = files[0];
     if (file.size > MAX_FILE_SIZE) {
        showError('File too large. Maximum allowed size is 100MB.');
@@ -208,16 +208,19 @@ function updateUploadArea(file) {
     uploadArea.style.borderColor = 'rgba(34, 197, 94, 0.6)';
     uploadArea.style.background = 'rgba(34, 197, 94, 0.1)';
 }
+// Crittografa il file lato client e lo carica sul server
 async function uploadFile(file, options = {}) {
     try {
         if (!window.cryptoClient.isInitialized) {
             await window.cryptoClient.initialize();
         }
+        // Genera token, salt e deriva la chiave di crittografia
         const token = window.cryptoClient.generateToken();
         const salt = window.cryptoClient.generateSalt();
         const encryptionKey = window.cryptoClient.deriveKey(token, salt);
         const fileData = await file.arrayBuffer();
         const fileBytes = new Uint8Array(fileData);
+        // Crittografa file e metadati prima dell'upload
         const encryptedData = window.cryptoClient.encryptFile(fileBytes, encryptionKey);
         const metadata = {
             filename: file.name,

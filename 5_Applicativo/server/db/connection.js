@@ -1,7 +1,7 @@
 const { Pool } = require('pg');
 const path = require('path');
 require('dotenv').config();
-
+// Configurazione connessione PostgreSQL
 const dbConfig = {
     host: process.env.DB_HOST || 'localhost',
     port: parseInt(process.env.DB_PORT) || 5432,
@@ -9,7 +9,7 @@ const dbConfig = {
     user: process.env.DB_USER || 'postgres',
     password: process.env.DB_PASSWORD || '',
     ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
-    max: 20,
+    max: 20, // max connessioni nel pool
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 2000,
 };
@@ -27,6 +27,7 @@ async function testConnection() {
         return false;
     }
 }
+// Esegue query con logging delle performance
 async function query(text, params = []) {
     const start = Date.now();
     try {
