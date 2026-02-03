@@ -146,7 +146,7 @@ sudo -u postgres psql -c "CREATE DATABASE filetransfer_db OWNER webfiletransfer;
 
 ## 📚 Risorse & Link
 
-- [📖 Documentazione Completa](Documentazione_WebFileTransfer.docx) - Analisi, design, test
+- [📖 Documentazione Completa](3_Documentazione/Documentazione_WebFileTransfer.docx) - Analisi, design, test
 - [🔗 Demo Live](#) - *(Coming soon)*
 
 ## 📄 Licenza
